@@ -63,7 +63,8 @@ namespace SensidevInterview.Services
                             resultCollection.Add(new CityTemperature(cityTemp, cityName));
                     }
                 }
-                
+                if(_httpClient != null)
+                    _httpClient.Dispose();
                 return resultCollection;
             }
             catch (Exception ex)

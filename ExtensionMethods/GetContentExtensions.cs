@@ -14,14 +14,10 @@ namespace SensidevInterview.ExtensionMethods
                 {
                     Task<string> t = coordContent._Client.GetStringAsync(coordContent._Url);
                     content = t.Result;
-                    coordContent._Client.Dispose();
                     return content;
                 }  
             }
-            catch(Exception)
-            {
-                coordContent._Client.Dispose();
-            }
+            catch { }
             return content;
         }
     }
