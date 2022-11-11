@@ -1,13 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using SensidevInterview.DTO;
-
-namespace SensidevInterview;
-
-public interface IWeatherService
-{
-    public IEnumerable<CityTemperature> GetTemperatures();
-}
+using SensidevInterview.Interfaces;
 
 public class WeatherService : IWeatherService
 {
