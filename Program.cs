@@ -3,12 +3,13 @@ using Newtonsoft.Json;
 using SensidevInterview.DTO;
 using SensidevInterview.ExtensionMethods;
 using SensidevInterview.Interfaces;
-
-
-
+using SensidevInterview.Model;
+using SensidevInterview.Services;
+using System.Configuration;
 
 public class Program
 {
+    public static ApiUrls? settings= null;
     public static void Main(string[] args)
     {   
         var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ public class Program
         builder.Services.AddScoped<IWeatherService, WeatherService>();
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        settings = builder.Configuration.GetSection("ApiUrls").Get<ApiUrls>();
 
         var app = builder.Build();
 
