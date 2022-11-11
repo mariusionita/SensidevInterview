@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using SensidevInterview.DTO;
 
 namespace SensidevInterview;
 
@@ -10,7 +11,7 @@ public interface IWeatherService
 
 public class WeatherService : IWeatherService
 {
-    private const string _serviceKey = "a2dcdf88e1bde658110f086ad638bf4a";
+    private const string _serviceKey = "a2dcdf88e1bde658110f086ad638bf4a"; // put this into appsettings.json file
     private static (double Lat, double Lon)[] _knownCoordinates = new (double Lat, double Lon)[] { new (45.764479, 21.228447), new (44.431514, 26.103138), new (47.153058, 27.590374), new (46.761286, 23.580379), new (45.656547, 25.615596), new (44.181662, 28.635918) };
     private HttpClient _httpClient;
 
@@ -31,32 +32,34 @@ public class WeatherService : IWeatherService
             List<CityTemperature> resultCollection = new List<CityTemperature>();
             foreach (var coordinate in _knownCoordinates)
             {
+                // create extension methods for _httpClient.GetStringAsync methods and put as parameter the coordinates
+                // put the base url (https://api.openweathermap.org/data/2.5/weather?lat=) into config file appsettings.json
                 var result = _httpClient.GetStringAsync($"https://api.openweathermap.org/data/2.5/weather?lat={coordinate.Lat}&lon={coordinate.Lon}&appid={_serviceKey}").Result;
+                //check if _httpClient.GetStringAsync returned succesfully and if result is not null;
                 var weatherResultObject = JsonConvert.DeserializeObject<dynamic>(result);
-                double cityTemp = weatherResultObject.main.temp - 273.15;
+                if (weatherResultObject != null) {  double cityTemp = weatherResultObject.main.temp - 273.15;}
                 result = _httpClient.GetStringAsync($"http://api.openweathermap.org/geo/1.0/reverse?lat={coordinate.Lat}&lon={coordinate.Lon}&appid={_serviceKey}").ConfigureAwait(false).GetAwaiter().GetResult();
                 var geocodingResultObject = JsonConvert.DeserializeObject<dynamic>(result);
-                string cityName = geocodingResultObject[0].name;
+                if (geocodingResultObject != null) { string cityName = geocodingResultObject[0].name; }
+                // add new item to the list only if cityTemp, cityName are not null
                 resultCollection.Add(new CityTemperature(cityTemp, cityName));
             }
             return resultCollection;
-        }
+        }   
         catch (Exception ex)
         {
             Console.Error.WriteLine($"{DateTimeOffset.UtcNow.ToString("O")} - {nameof(GetTemperatures)} - Exception: {ex}");
+            _httpClient.Dispose(); // dispose the client if there is an error
             return Array.Empty<CityTemperature>();
+            
         }
     }
 }
 
-public record CityTemperature(double Temperature, string CityName);
-
-public record ResponseObject(int NumberOfColdCities, int NumberOfHotCities, CityTemperature[] Cities, CityTemperature SampleCity);
-
 public class Program
 {
     public static void Main(string[] args)
-    {
+    {   // add this config section into a startup file
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddAuthorization();
         builder.Services.AddScoped<IWeatherService, WeatherService>();
