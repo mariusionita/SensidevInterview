@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using SensidevInterview.DTO;
 using SensidevInterview.Interfaces;
 
+
 public class WeatherService : IWeatherService
 {
     private const string _serviceKey = "a2dcdf88e1bde658110f086ad638bf4a"; // put this into appsettings.json file
@@ -26,15 +27,17 @@ public class WeatherService : IWeatherService
             List<CityTemperature> resultCollection = new List<CityTemperature>();
             foreach (var coordinate in _knownCoordinates)
             {
+                string cityName = string.Empty;
+                double cityTemp = 0;
                 // create extension methods for _httpClient.GetStringAsync methods and put as parameter the coordinates
                 // put the base url (https://api.openweathermap.org/data/2.5/weather?lat=) into config file appsettings.json
                 var result = _httpClient.GetStringAsync($"https://api.openweathermap.org/data/2.5/weather?lat={coordinate.Lat}&lon={coordinate.Lon}&appid={_serviceKey}").Result;
                 //check if _httpClient.GetStringAsync returned succesfully and if result is not null;
                 var weatherResultObject = JsonConvert.DeserializeObject<dynamic>(result);
-                if (weatherResultObject != null) {  double cityTemp = weatherResultObject.main.temp - 273.15;}
+                if (weatherResultObject != null) {  cityTemp = weatherResultObject.main.temp - 273.15;}
                 result = _httpClient.GetStringAsync($"http://api.openweathermap.org/geo/1.0/reverse?lat={coordinate.Lat}&lon={coordinate.Lon}&appid={_serviceKey}").ConfigureAwait(false).GetAwaiter().GetResult();
                 var geocodingResultObject = JsonConvert.DeserializeObject<dynamic>(result);
-                if (geocodingResultObject != null) { string cityName = geocodingResultObject[0].name; }
+                if (geocodingResultObject != null) { cityName = geocodingResultObject[0].name; }
                 // add new item to the list only if cityTemp, cityName are not null
                 resultCollection.Add(new CityTemperature(cityTemp, cityName));
             }
@@ -53,7 +56,7 @@ public class WeatherService : IWeatherService
 public class Program
 {
     public static void Main(string[] args)
-    {   // add this config section into a startup file
+    {   
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddAuthorization();
         builder.Services.AddScoped<IWeatherService, WeatherService>();
