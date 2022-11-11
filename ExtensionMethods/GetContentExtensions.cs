@@ -2,7 +2,7 @@
 
 namespace SensidevInterview.ExtensionMethods
 {
-    public static class CoordinatesExtensions
+    public static class GetContentExtensions
     {
         // validates the input to make sure some exceptions are eliminated and gets the content from that specific url
         public static string GetDataFromThirdPartySources(this GetContent coordContent)
